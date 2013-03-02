@@ -13,21 +13,20 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 
 /**
  * @author Karan
  *
  */
-public class editDB implements ActionListener {
+public class EditDB implements ActionListener {
 
 	private JFrame frame;
 	private JTable table;
 	private JPanel north, south;
 	private JButton deleteSelected, save, addRow;
-	private DefaultTableModel model;
+	private EditTableModel model;
 
 	/**
 	 * Work on the GUI. Displays the table and buttons.
@@ -35,43 +34,40 @@ public class editDB implements ActionListener {
 	 * @param databaseName
 	 * @param quesToAnsMap
 	 */
-	public editDB(String databaseName, Map<String, String> quesToAnsMap) {
-		String[] columnNames = {"Question", "Answer", "Delete"};
-		Object[][] data = getData(quesToAnsMap);
-		initializeFrame(databaseName);
-		initializeNorth(data, columnNames);
-		initializeSouth();
-
-		frame.add(north, BorderLayout.NORTH);
-		frame.add(south, BorderLayout.SOUTH);
-
-		frame.setVisible(true);
+	public EditDB(String databaseName, Map<String, String> quesToAnsMap) {
+		createAndShowGUI(databaseName, quesToAnsMap);
 	}
-	
+
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == addRow) {
-			model.insertRow(table.getRowCount(), new Object[]{"", "", false});
+		try {
+			if (e.getSource() == addRow) {
+				
+			} else if (e.getSource() == save) {
+				
+			} else if (e.getSource() == deleteSelected) {
+				
+			}
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
-	}
-
-	/**
-	 * Converts a Map to a 2D array and returns it.
-	 * @param quesToAnsMap
-	 * @return
-	 */
-	private Object[][] getData(Map<String, String> quesToAnsMap) {
-		Object[][] data = new Object[quesToAnsMap.keySet().size()][3];
-		int i = 0;
-		for (String question : quesToAnsMap.keySet()) {
-			data[i][0] = question;
-			data[i][1] = quesToAnsMap.get(question);
-			data[i][2] = new Boolean(false);
-			i++;
-		}
-		return data;
 	}
 	
 	//********************** BUILD GUI **********************//
+	/**
+	 * Puts the GUI together, initializes data.
+	 * @param databaseName
+	 * @param quesToAnsMap
+	 */
+	protected void createAndShowGUI(String databaseName, Map<String, String> quesToAnsMap) {
+		initializeFrame(databaseName);
+		initializeNorth(quesToAnsMap, COLUMN_NAMES);
+		initializeSouth();
+		frame.add(north, BorderLayout.NORTH);
+		frame.add(south, BorderLayout.SOUTH);
+		frame.setVisible(true);
+	}
+	
 	/**
 	 * Initializes the state of frame.
 	 */
@@ -88,23 +84,11 @@ public class editDB implements ActionListener {
 	/**
 	 * Initializes the state of north portion of frame.
 	 */
-	private void initializeNorth(Object[][] data, String[] columnNames) {
+	private void initializeNorth(Map<String, String> quesToAnsMap, String[] columnNames) {
 		north = new JPanel(new GridLayout(1, 1));
 
-		model = new DefaultTableModel(data, columnNames);
-		table = new JTable(model) {			
-			@Override
-			public Class getColumnClass(int column) {
-				switch (column) {
-				case 0:
-					return String.class;
-				case 1:
-					return String.class;
-				default:
-					return Boolean.class;
-				}
-			}
-		};
+		model = new EditTableModel(quesToAnsMap);
+		table = new JTable(model);
 		table.setFillsViewportHeight(true);
 		table.setRowHeight(25);
 		table.setRowMargin(5);

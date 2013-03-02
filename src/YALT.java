@@ -1,5 +1,4 @@
 import java.io.*;
-import java.security.AccessController;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -68,7 +67,6 @@ public class YALT implements ActionListener {
         		frame.setVisible(true);
             }
         });
-        //System.out.println(Thread.currentThread().getName());
 	}
 
 
@@ -97,7 +95,7 @@ public class YALT implements ActionListener {
 				// Exit the program
 				System.exit(1);
 			} else if(e.getSource() == edit) {
-				new editDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
+				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
