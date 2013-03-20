@@ -1,8 +1,4 @@
-import static utils.Constants.*;
-
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
@@ -11,12 +7,10 @@ import java.awt.event.ActionListener;
 import java.util.*;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -48,6 +42,8 @@ public class EditDB implements ActionListener {
 			if (e.getSource() == addRow) {
 				// TODO: Popup asking for ques and answer
 				model.addRow(new Vector<Object>());
+				table.scrollRectToVisible(table.getCellRect(model.getRowCount(), 
+								model.getColumnCount(), false)); // Auto scroll to last row
 			} else if (e.getSource() == save) {
 
 			} else if (e.getSource() == deleteSelected) {
