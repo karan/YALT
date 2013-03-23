@@ -1,16 +1,24 @@
+import static utils.Constants.*;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.util.Map;
+import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -19,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class EditDB implements ActionListener {
 
+	private String databaseName;
 	private JFrame frame;
 	private JTable table;
 	private JPanel north, south;
@@ -34,20 +43,46 @@ public class EditDB implements ActionListener {
 	 * @param quesToAnsMap
 	 */
 	public EditDB(String databaseName, Map<String, String> quesToAnsMap) {
+		this.databaseName = databaseName;
 		createAndShowGUI(databaseName, quesToAnsMap);
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (e.getSource() == addRow) {
-				// TODO: Popup asking for ques and answer
-				model.addRow(new Vector<Object>());
-				table.scrollRectToVisible(table.getCellRect(model.getRowCount(), 
-								model.getColumnCount(), false)); // Auto scroll to last row
+				JTextField question = new JTextField();
+				JTextField answer = new JTextField();
+				Object[] message = {"Question:", question, "Answer:", answer};
+				int option = JOptionPane.showConfirmDialog(frame, message, "Add New", 
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+				if (option == JOptionPane.OK_OPTION && question.getText() != null
+						&& question.getText().length() > 0) {
+					Vector<Object> newQuestion = new Vector<Object>(3, 1);
+					newQuestion.add(question.getText());
+					newQuestion.add(answer.getText());
+					newQuestion.add(false);
+					model.addRow(newQuestion);
+					table.scrollRectToVisible(table.getCellRect(model.getRowCount() + 1, 
+							model.getColumnCount(), false)); // Auto scroll to last row
+				}
 			} else if (e.getSource() == save) {
-
+				File file = new File(DATABASE + databaseName);
+				if (file.exists()) {
+					BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+					for (Vector<Object> singleRow : data) {
+						writer.write(singleRow.get(0) + ":::::" + singleRow.get(1));
+						writer.newLine();
+						writer.flush();
+					}
+					writer.close();
+					JOptionPane.showMessageDialog(null, "Database saved successfully!");
+				} else {
+					JOptionPane.showMessageDialog(null, "File not found. Make sure the " +
+							"file is in the same folder as this program and has \"" + 
+							EXTENSION + "\" extension.");
+				}
 			} else if (e.getSource() == deleteSelected) {
-
+				// TODO: Delete all selected rows!
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -60,7 +95,7 @@ public class EditDB implements ActionListener {
 	 * @param databaseName
 	 * @param quesToAnsMap
 	 */
-	protected void createAndShowGUI(String databaseName, Map<String, String> quesToAnsMap) {
+	private void createAndShowGUI(String databaseName, Map<String, String> quesToAnsMap) {
 		initializeFrame(databaseName);
 		columnNames = new Vector<String>(3, 0);
 		columnNames.add("Question");

@@ -96,6 +96,7 @@ public class YALT implements ActionListener {
 				System.exit(1);
 			} else if(e.getSource() == edit) {
 				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
+				refreshState(); //TODO: Make sure it runs only after EditDB closes!
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
@@ -201,9 +202,7 @@ public class YALT implements ActionListener {
 			if(file.delete()) {
 				JOptionPane.showMessageDialog(null, "Deletion successful!");
 				// After deletion, refresh the state of the program
-				// TODO: Better alternative??
-				frame.dispose();
-				new YALT();
+				refreshState();
 			} else {
 				JOptionPane.showMessageDialog(null, "Deletion failed!");
 			}
@@ -331,6 +330,12 @@ public class YALT implements ActionListener {
 		frame.add(north, BorderLayout.NORTH);
 		frame.add(center, BorderLayout.CENTER);
 		frame.add(south, BorderLayout.SOUTH);
+	}
+	
+	private void refreshState() {
+		// TODO: Better alternative??
+		frame.dispose();
+		new YALT();
 	}
 	//********************** BUILD GUI **********************//
 
