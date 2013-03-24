@@ -9,16 +9,13 @@ import static utils.Constants.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Point;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
@@ -36,6 +33,8 @@ import javax.swing.table.DefaultTableModel;
  * TODO: Change to a dialog
  */
 public class EditDB implements ActionListener {
+	
+	//TODO: real-time editing of data!
 
 	private String databaseName; // Holds the database's name being worked on
 	private JFrame frame;
@@ -70,7 +69,7 @@ public class EditDB implements ActionListener {
 				JTextField answer = new JTextField();
 				Object[] message = {"Question:", question, "Answer:", answer};
 				// Show a popup asking for question and answer from user
-				do {
+				while (!isRowAdded) {
 					int option = JOptionPane.showConfirmDialog(frame, message, "Add New", 
 							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 					if (option == JOptionPane.OK_OPTION) {
@@ -84,14 +83,15 @@ public class EditDB implements ActionListener {
 							model.addRow(newQuestion); // Update the model with new question
 							table.scrollRectToVisible(table.getCellRect(model.getRowCount() + 1, 
 									model.getColumnCount(), false)); // Auto scroll to last row
-							model.fireTableDataChanged();
+							isRowAdded = true;
+							System.out.println(data);
 						} else {
 							JOptionPane.showMessageDialog(frame, "Please enter all fields");
 						}
 					} else { // User clicked cancel, so we don't need to loop here!
 						isRowAdded = true;
 					}
-				} while (!isRowAdded);
+				}
 			} else if (e.getSource() == save) {
 				// Save the database
 				File file = new File(DATABASE + databaseName);
