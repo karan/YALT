@@ -1,10 +1,46 @@
-import java.io.*;
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+//***************************************************
+// 
+// 
+// 
+// 
+//***************************************************
 
 import static utils.Constants.*;
+
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * @author Karan Goel
@@ -21,29 +57,30 @@ public class YALT implements ActionListener {
 		new YALT(); // Create and run the GUI
 	}
 
-	private JFrame frame;
-	private JPanel north;
-	private JPanel center;
-	private JPanel south;
-	private JButton nextQuestion;
-	private JButton showAnswer;
-	private JTextArea question;
-	private JTextArea answer;
-	private JComboBox fileSelector;
-	private JButton go;
-	private JLabel numberOfQuestions;
+	private JFrame frame; // Holds the main window
+	private JPanel north; // Handles the top part of frame - file selector, go
+	private JPanel center; // Handles the middle part of frame - ques and answer labels
+	private JPanel south; // Handles the bottom part of frame - show ans, next question  
+	private JButton nextQuestion; // Shows next question for selected database
+	private JButton showAnswer; // Shows answer for displayed question
+	private JTextArea question; // Shows the random question from selected database
+	private JTextArea answer; // Shows the answer to question
+	private JComboBox fileSelector; // Allows users to select a database from DATABASE folder
+	// with EXTENSION extension
+	private JButton go; // Runs the program for the selected database
+	private JLabel numberOfQuestions; // Shows the number of questions in selected database
 
 	private JMenuBar menubar;
 	private JMenu menu, databaseMenu;
-	private JMenuItem exit, edit, delete;
+	private JMenuItem exit, newDB, edit, delete;
 
 	/**
-	 * Work on the GUI. Displays all buttons, labels etc etc.
+	 * Work on the GUI. Displays all buttons, labels etc.
 	 * Also sets up the fileSelector with list of files in the
 	 * database folder.
 	 */
 	public YALT() {
-        try {
+		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -54,33 +91,32 @@ public class YALT implements ActionListener {
 		} catch (UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-        
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-            	// Create and show GUI
-            	initializeFrame();		
-        		setFrameMenu();
-        		initializeNorth();
-        		initializeCenter();		
-        		initializeSouth();
-        		addEverything();
-        		frame.setVisible(true);
-            }
-        });
+
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				// Create and show GUI
+				initializeFrame();		
+				setFrameMenu();
+				initializeNorth();
+				initializeCenter();		
+				initializeSouth();
+				addEverything();
+				frame.setVisible(true);
+			}
+		});
 	}
 
 
 	/**
-	 * The meat of the program, catches all actions
+	 * Listens to, and responds to various events in the program.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		// TODO: Add new database
 		try {
 			if(e.getSource() == fileSelector) { 
-				// If file is selected
+				// If a new file is selected
 				fileName = DATABASE + (String) fileSelector.getSelectedItem();
 				go.setEnabled(true); // File name is changed, set "Go" to enabled.
-				databaseMenu.setEnabled(false); // File changed, hence disable manage database menu
+				databaseMenu.setEnabled(false); // File changed, so disable manage database menu
 			} else if(e.getSource() == go) { 
 				// When the "Go" button is pressed
 				goActions();
@@ -91,20 +127,31 @@ public class YALT implements ActionListener {
 			} else if(e.getSource() == showAnswer) { 
 				// User requests the answer
 				answer.setText("Answer: " + answerToQues);
-			} else if(e.getSource() == exit) {
-				// Exit the program
-				System.exit(1);
 			} else if(e.getSource() == edit) {
-				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
-				refreshState(); //TODO: Make sure it runs only after EditDB closes!
+				frame.add(new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap));
+				//TODO: Make sure it runs only after EditDB closes!
+				// @see: http://stackoverflow.com/questions/15582811/
+				refreshState();
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
 						"Are you sure you want to delete the database " 
-						+ (String) fileSelector.getSelectedItem() + "?",
-						"Confirm Deletion", JOptionPane.YES_NO_OPTION, 
-						JOptionPane.ERROR_MESSAGE);
+								+ (String) fileSelector.getSelectedItem() + "?",
+								"Confirm Deletion", JOptionPane.YES_NO_OPTION, 
+								JOptionPane.ERROR_MESSAGE);
 				checkAndDelete(n, fileName);
+			} else if (e.getSource() == newDB) { 
+				JTextField fileName = new JTextField("Database Name (without ." + EXTENSION + ")");
+				String option = JOptionPane.showInputDialog(frame, fileName, 
+							"Add New Database", JOptionPane.OK_CANCEL_OPTION); // TODO: Shows as 2 text field..
+				System.out.println(fileName.getText());
+				if (fileName.getText() != null && fileName.getText().length() > 0) {
+					frame.add(new EditDB(fileName.getText() + "." + EXTENSION, 
+											new HashMap<String, String>()));
+				}
+			} else if(e.getSource() == exit) {
+				// Exit the program
+				System.exit(1);
 			}
 		} catch (FileNotFoundException ex) {
 			JOptionPane.showMessageDialog(null, "File not found. Make sure the " +
@@ -114,23 +161,24 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Do stuff when "Go" is clicked
-	 * @throws FileNotFoundException
+	 * All actions that occur when "Go" is pressed. Shows a random question
+	 * from selected database, and changes the state of components as
+	 * required.
 	 */
 	private void goActions() throws FileNotFoundException {
 		go.setEnabled(false); // Disable "Go" until filename is changed.
 		question.setText("Question: ");
 		answer.setText("Answer: ");
 		Scanner scan = new Scanner(new File(fileName));
-		int count = 0; // Store the number of questions
+		int count = 0; // Store the number of questions in selected database
 		try {
 			// Map all questions and answers
-			quesToAnsMap = new HashMap<String, String>(); // Re-initialize map
+			quesToAnsMap = new HashMap<String, String>();
 			while(scan.hasNextLine()) {
 				String line = scan.nextLine();
 				if(line.contains(":::::")) {
 					String[] qna = line.split(":::::");
-					quesToAnsMap.put(qna[0], qna[1]);
+					quesToAnsMap.put(qna[0], qna[1]); // Populate the map
 					count++;
 				} else {
 					// file is in wrong format
@@ -144,8 +192,7 @@ public class YALT implements ActionListener {
 			// Make sure scanner is closed.
 			scan.close();
 		}
-		// Display total number of questions
-		numberOfQuestions.setText(count + " questions");
+		numberOfQuestions.setText(count + " questions"); // Display total number of questions
 		// Display a random question, update the answerToQues to it's answer
 		questionList = new ArrayList<String>();
 		questionList = mapToArrayList(quesToAnsMap);
@@ -180,9 +227,9 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Prints a random question, and returns it's answer
-	 * @param list
-	 * @return answer to question shown
+	 * Prints a random question, and returns it's answer as a String
+	 * @param list of questions
+	 * @return answer to random question shown
 	 */
 	public String showRandomQuestion(ArrayList<String> list) {
 		Random rand = new Random();
@@ -192,9 +239,10 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Deletes the passed file if n is yes.
-	 * @param n
-	 * @throws FileNotFoundException 
+	 * Deletes the passed file if user selection is yes.
+	 * Also resets the state of the program after successful file deletion.
+	 * @param n is user response, and name of file
+	 * @throws FileNotFoundException if file is not found
 	 */
 	private void checkAndDelete(int n, String fileName) {
 		if (n == JOptionPane.YES_OPTION) {
@@ -209,10 +257,19 @@ public class YALT implements ActionListener {
 		}
 	}
 
+	/**
+	 * Refreshes/Resets the state of the program.
+	 */
+	private void refreshState() {
+		// TODO: Better alternative??
+		frame.dispose();
+		new YALT();
+	}
+
 
 	//********************** BUILD GUI **********************//
 	/**
-	 * Initializes the state of frame.
+	 * Initializes the state of frame by setting its properties.
 	 */
 	private void initializeFrame() {
 		frame = new JFrame();
@@ -225,8 +282,8 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Sets the properties to passed TextArea to make it loop like a label
-	 * with word wrapping
+	 * Sets the properties to passed TextArea to make it look like a label
+	 * with word wrapping.
 	 */
 	private JTextArea textAreaProperties(JTextArea textArea) {
 		textArea.setEditable(false);
@@ -240,7 +297,8 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Initializes the state of north portion of frame.
+	 * Initializes the state of north portion of frame which holds the
+	 * file selector, "Go" button and number of questions label.
 	 */
 	private void initializeNorth() {
 		north = new JPanel(new GridLayout(1, 4));
@@ -258,7 +316,8 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Initializes the state of center portion of frame.
+	 * Initializes the state of center portion of frame which holds the
+	 * labels for displayed question and answer.
 	 */
 	private void initializeCenter() {
 		center = new JPanel(new GridLayout(2, 1));
@@ -273,7 +332,8 @@ public class YALT implements ActionListener {
 	}
 
 	/**
-	 * Initializes the state of south portion of frame.
+	 * Initializes the state of south portion of frame which holds the
+	 * show answer and next question buttons, and the about bar.
 	 */
 	private void initializeSouth() {
 		south = new JPanel(new GridLayout(2, 2));
@@ -294,29 +354,39 @@ public class YALT implements ActionListener {
 	 * Initializes the menu bar of frame.
 	 */
 	private void setFrameMenu() {
-		// Initialize the menubar
+		// Initialize the menu bar
 		menubar = new JMenuBar();
 
 		// Initialize a menu
 		menu = new JMenu("File");
 		menubar.add(menu);
 		exit = new JMenuItem("Exit");
-		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)); // Alt + F4
+		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, 
+												ActionEvent.ALT_MASK)); // Alt + F4
 		exit.addActionListener(this);
 		menu.add(exit);
 
+		newDB = new JMenuItem("Add New Database");
+		newDB.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, 
+												ActionEvent.ALT_MASK)); // Alt + A
+		newDB.addActionListener(this);
+		menu.add(newDB);
+
+		// Sub-menu to manage selected database
 		databaseMenu = new JMenu("Manage Database");
 		databaseMenu.setToolTipText("Select a database from list below, and press \"Go\"");
 		databaseMenu.setEnabled(false); // hidden until "Go" is clicked
 		menubar.add(databaseMenu);
 
 		edit = new JMenuItem("Edit");
-		edit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK)); // Alt + E
+		edit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, 
+												ActionEvent.ALT_MASK)); // Alt + E
 		edit.addActionListener(this);
 		databaseMenu.add(edit);
 
 		delete = new JMenuItem("Delete");
-		delete.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK)); // Alt + D
+		delete.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, 
+												ActionEvent.ALT_MASK)); // Alt + D
 		delete.addActionListener(this);	
 		databaseMenu.add(delete);
 
@@ -330,12 +400,6 @@ public class YALT implements ActionListener {
 		frame.add(north, BorderLayout.NORTH);
 		frame.add(center, BorderLayout.CENTER);
 		frame.add(south, BorderLayout.SOUTH);
-	}
-	
-	private void refreshState() {
-		// TODO: Better alternative??
-		frame.dispose();
-		new YALT();
 	}
 	//********************** BUILD GUI **********************//
 
