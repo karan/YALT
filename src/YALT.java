@@ -16,6 +16,8 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -128,10 +130,15 @@ public class YALT implements ActionListener {
 				// User requests the answer
 				answer.setText("Answer: " + answerToQues);
 			} else if(e.getSource() == edit) {
-				frame.add(new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap));
+				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
 				//TODO: Make sure it runs only after EditDB closes!
 				// @see: http://stackoverflow.com/questions/15582811/
-				refreshState();
+//				EditDB.getFrame().addWindowsListener(new WindowAdapter() {
+//				    public void windowClosed(WindowEvent we) {
+//				        // The frame is closed, let's dot something else
+//				        refreshState();
+//				    }
+//				}
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
@@ -141,13 +148,11 @@ public class YALT implements ActionListener {
 								JOptionPane.ERROR_MESSAGE);
 				checkAndDelete(n, fileName);
 			} else if (e.getSource() == newDB) { 
-				JTextField fileName = new JTextField("Database Name (without ." + EXTENSION + ")");
-				String option = JOptionPane.showInputDialog(frame, fileName, 
-							"Add New Database", JOptionPane.OK_CANCEL_OPTION); // TODO: Shows as 2 text field..
-				System.out.println(fileName.getText());
-				if (fileName.getText() != null && fileName.getText().length() > 0) {
-					frame.add(new EditDB(fileName.getText() + "." + EXTENSION, 
-											new HashMap<String, String>()));
+				String fileName = JOptionPane.showInputDialog(frame, "Database Name (without ." + EXTENSION + ")", 
+							"Add New Database", JOptionPane.OK_CANCEL_OPTION);
+				System.out.println(fileName);
+				if (fileName != null && fileName.length() > 0) {
+					new EditDB(fileName + "." + EXTENSION, new HashMap<String, String>());
 				}
 			} else if(e.getSource() == exit) {
 				// Exit the program

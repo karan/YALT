@@ -9,8 +9,10 @@ import static utils.Constants.*;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
@@ -33,7 +35,7 @@ import javax.swing.table.DefaultTableModel;
  * @author Karan Goel
  * TODO: Change to a dialog
  */
-public class EditDB extends JPanel implements ActionListener {
+public class EditDB implements ActionListener {
 
 	private String databaseName; // Holds the database's name being worked on
 	private JFrame frame;
@@ -60,44 +62,48 @@ public class EditDB extends JPanel implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		try {
+			// TODO: data doesn't change
 			if (e.getSource() == addRow) { 
 				// Add a new row
+				boolean isRowAdded = false;
 				JTextField question = new JTextField();
 				JTextField answer = new JTextField();
 				Object[] message = {"Question:", question, "Answer:", answer};
 				// Show a popup asking for question and answer from user
-				int option = JOptionPane.showConfirmDialog(frame, message, "Add New", 
-						JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if (option == JOptionPane.OK_OPTION && question.getText() != null
-						&& question.getText().length() > 0 && answer.getText() != null
-						&& answer.getText().length() > 0) {
-					// User input is valid superficially
-					Vector<Object> newQuestion = new Vector<Object>(3, 1);
-					newQuestion.add(question.getText());
-					newQuestion.add(answer.getText());
-					newQuestion.add(false);
-					model.addRow(newQuestion); // Update the model with new question
-					table.scrollRectToVisible(table.getCellRect(model.getRowCount() + 1, 
-							model.getColumnCount(), false)); // Auto scroll to last row
-				}
+				do {
+					int option = JOptionPane.showConfirmDialog(frame, message, "Add New", 
+							JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+					if (option == JOptionPane.OK_OPTION) {
+						if (question.getText() != null && answer.getText() != null &&
+								question.getText().length() > 0 && answer.getText().length() > 0) {
+							// User input is valid superficially
+							Vector<Object> newQuestion = new Vector<Object>(3, 1);
+							newQuestion.add(question.getText());
+							newQuestion.add(answer.getText());
+							newQuestion.add(false);
+							model.addRow(newQuestion); // Update the model with new question
+							table.scrollRectToVisible(table.getCellRect(model.getRowCount() + 1, 
+									model.getColumnCount(), false)); // Auto scroll to last row
+							model.fireTableDataChanged();
+						} else {
+							JOptionPane.showMessageDialog(frame, "Please enter all fields");
+						}
+					} else { // User clicked cancel, so we don't need to loop here!
+						isRowAdded = true;
+					}
+				} while (!isRowAdded);
 			} else if (e.getSource() == save) {
 				// Save the database
 				File file = new File(DATABASE + databaseName);
-				if (file.exists()) {
-					BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-					for (Vector<Object> singleRow : data) {
-						writer.write(singleRow.get(0) + ":::::" + singleRow.get(1));
-						writer.newLine(); // to insert a blank new line in file
-						writer.flush();
-					}
-					writer.close();
-					JOptionPane.showMessageDialog(null, "Database saved successfully!");
-				} else {
-					JOptionPane.showMessageDialog(null, "File not found. Make sure the " +
-							"file is in the same folder as this program and has \"" + 
-							EXTENSION + "\" extension.");
+				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+				for (Vector<Object> singleRow : data) {
+					writer.write(singleRow.get(0) + ":::::" + singleRow.get(1));
+					writer.newLine(); // to insert a blank new line in file
+					writer.flush();
 				}
-			} else if (e.getSource() == deleteSelected) {
+				writer.close();
+				JOptionPane.showMessageDialog(null, "Database saved successfully!");
+				} else if (e.getSource() == deleteSelected) {
 				// Delete all selected rows
 				// System.out.println("Before deletion: " + data);
 				if (data.size() <= 0) {
@@ -114,7 +120,7 @@ public class EditDB extends JPanel implements ActionListener {
 					}
 					if (!data.removeAll(toRemove)) {
 						JOptionPane.showMessageDialog(frame, 
-										"Could not delete rows. Something is wrong!");
+								"Could not delete rows. Something is wrong!");
 					}
 					model.setDataVector(data, columnNames); // Update the model!
 				}
@@ -153,7 +159,7 @@ public class EditDB extends JPanel implements ActionListener {
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setSize(new Dimension(550, 500));
 		frame.setLocation(new Point(450, 300));
-		frame.setTitle("Edit Database" + databaseName);
+		frame.setTitle("Edit Database " + databaseName);
 		frame.setResizable(false);
 		frame.setLayout(new BorderLayout());
 	}
@@ -165,7 +171,6 @@ public class EditDB extends JPanel implements ActionListener {
 	private void initializeNorth(Map<String, String> quesToAnsMap, Vector<String> columnNames) {
 		north = new JPanel(new GridLayout(1, 1));
 		model = new DefaultTableModel(convertMapToVector(quesToAnsMap), columnNames) {
-			private static final long serialVersionUID = 1L;
 			@Override
 			public Class<?> getColumnClass(int col) {
 				return getValueAt(0, col).getClass();
