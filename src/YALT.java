@@ -150,7 +150,6 @@ public class YALT implements ActionListener {
 			} else if (e.getSource() == newDB) { 
 				String fileName = JOptionPane.showInputDialog(frame, "Database Name (without ." + EXTENSION + ")", 
 							"Add New Database", JOptionPane.OK_CANCEL_OPTION);
-				System.out.println(fileName);
 				if (fileName != null && fileName.length() > 0) {
 					new EditDB(fileName + "." + EXTENSION, new HashMap<String, String>());
 				}

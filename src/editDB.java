@@ -61,7 +61,6 @@ public class EditDB implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		try {
-			// TODO: data doesn't change
 			if (e.getSource() == addRow) { 
 				// Add a new row
 				boolean isRowAdded = false;
@@ -84,7 +83,6 @@ public class EditDB implements ActionListener {
 							table.scrollRectToVisible(table.getCellRect(model.getRowCount() + 1, 
 									model.getColumnCount(), false)); // Auto scroll to last row
 							isRowAdded = true;
-							System.out.println(data);
 						} else {
 							JOptionPane.showMessageDialog(frame, "Please enter all fields");
 						}
@@ -210,8 +208,8 @@ public class EditDB implements ActionListener {
 	 * @return a Vector of questions and answers
 	 */
 	public Vector<Vector<Object>> convertMapToVector(Map<String, String> quesToAnsMap) {
+		data = new Vector<Vector<Object>>(quesToAnsMap.size(), 1);
 		if (quesToAnsMap.size() > 0) {
-			data = new Vector<Vector<Object>>(quesToAnsMap.size(), 1);
 			for (String question : quesToAnsMap.keySet()) {
 				Vector<Object> singleQuestion = new Vector<Object>(3, 1);
 				singleQuestion.add(question);
@@ -219,9 +217,8 @@ public class EditDB implements ActionListener {
 				singleQuestion.add(false);
 				data.add(singleQuestion);
 			}
-			return data;
 		}
-		return new Vector<Vector<Object>>();
+		return data;
 	}
 
 }
