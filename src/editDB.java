@@ -30,12 +30,10 @@ import javax.swing.table.DefaultTableModel;
 
 /**
  * @author Karan Goel
- * TODO: Change to a dialog
+ * 
  */
 public class EditDB implements ActionListener {
 	
-	//TODO: real-time editing of data!
-
 	private String databaseName; // Holds the database's name being worked on
 	private JFrame frame;
 	private JTable table; // Shows all questions and answers from the database
