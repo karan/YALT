@@ -1,7 +1,9 @@
 //***************************************************
+// Karan Goel, 2013
+// karan@goel.im
 // 
-// 
-// 
+// EditDB is in a way heart class of YALT. It is used
+// to edit existing database, or create a new one.
 // 
 //***************************************************
 
@@ -35,7 +37,7 @@ import javax.swing.table.DefaultTableModel;
 public class EditDB implements ActionListener {
 	
 	private String databaseName; // Holds the database's name being worked on
-	private JFrame frame;
+	private static JFrame frame;
 	private JTable table; // Shows all questions and answers from the database
 	private JPanel north, south;
 	private JButton deleteSelected, save, addRow;
@@ -167,6 +169,7 @@ public class EditDB implements ActionListener {
 	private void initializeNorth(Map<String, String> quesToAnsMap, Vector<String> columnNames) {
 		north = new JPanel(new GridLayout(1, 1));
 		model = new DefaultTableModel(convertMapToVector(quesToAnsMap), columnNames) {
+			private static final long serialVersionUID = 8867416633270258406L;
 			@Override
 			public Class<?> getColumnClass(int col) {
 				return getValueAt(0, col).getClass();
@@ -217,6 +220,14 @@ public class EditDB implements ActionListener {
 			}
 		}
 		return data;
+	}
+
+	/**
+	 * Returns the frame for WindowListener to act accordingly!
+	 * @return the current frame
+	 */
+	public static JFrame getFrame() {
+		return frame;
 	}
 
 }

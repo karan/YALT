@@ -1,7 +1,15 @@
 //***************************************************
+// Karan Goel, 2013
+// karan@goel.im
 // 
+// Yet Another Learning Tool (YALT) is a lightweight
+// utility to make it easier for you to remember things.
+// It is a flash-card like system, where you'lll be
+// presented with random questions from selected database.
+// With YALT, you have to spend less time learning more.
 // 
-// 
+// Currently, YALT supports only single line questions
+// and answers in plain text.
 // 
 //***************************************************
 
@@ -23,6 +31,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
@@ -39,21 +48,16 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-/**
- * @author Karan Goel
- *
- */
+
 public class YALT implements ActionListener {
 
 	private String fileName; // File name selected by user
 	private String answerToQues; // Holds the answer to the random question shown
 	private Map<String, String> quesToAnsMap; // Map of questions to answers in a file
-	private ArrayList<String> questionList; // List of all questions in a file
 
 	public static void main(String[] args) {
 		new YALT(); // Create and run the GUI
@@ -67,8 +71,8 @@ public class YALT implements ActionListener {
 	private JButton showAnswer; // Shows answer for displayed question
 	private JTextArea question; // Shows the random question from selected database
 	private JTextArea answer; // Shows the answer to question
-	private JComboBox fileSelector; // Allows users to select a database from DATABASE folder
-	// with EXTENSION extension
+	private JComboBox<String> fileSelector; // Allows users to select a database from DATABASE folder
+									// with EXTENSION extension
 	private JButton go; // Runs the program for the selected database
 	private JLabel numberOfQuestions; // Shows the number of questions in selected database
 
@@ -125,20 +129,15 @@ public class YALT implements ActionListener {
 			} else if (e.getSource() == nextQuestion) { 
 				// Show next random question
 				answer.setText("Answer: ");
-				answerToQues = showRandomQuestion(questionList);
+				answerToQues = showRandomQuestion(quesToAnsMap);
 			} else if(e.getSource() == showAnswer) { 
 				// User requests the answer
 				answer.setText("Answer: " + answerToQues);
 			} else if(e.getSource() == edit) {
+				// Edit selected database
+				frame.setEnabled(false); // Disable input to parent frame
 				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
-				//TODO: Make sure it runs only after EditDB closes!
-				// @see: http://stackoverflow.com/questions/15582811/
-//				EditDB.getFrame().addWindowsListener(new WindowAdapter() {
-//				    public void windowClosed(WindowEvent we) {
-//				        // The frame is closed, let's dot something else
-//				        refreshState();
-//				    }
-//				}
+				refreshState(); // Refresh the frame. Reinitialize, and enable all input
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
@@ -148,10 +147,13 @@ public class YALT implements ActionListener {
 								JOptionPane.ERROR_MESSAGE);
 				checkAndDelete(n, fileName);
 			} else if (e.getSource() == newDB) { 
+				// Add a new database
 				String fileName = JOptionPane.showInputDialog(frame, "Database Name (without ." + EXTENSION + ")", 
 							"Add New Database", JOptionPane.OK_CANCEL_OPTION);
 				if (fileName != null && fileName.length() > 0) {
+					frame.setEnabled(false); // Disable input to parent frame
 					new EditDB(fileName + "." + EXTENSION, new HashMap<String, String>());
+					refreshState(); // Refresh the frame. Reinitialize, and enable all input
 				}
 			} else if(e.getSource() == exit) {
 				// Exit the program
@@ -187,7 +189,7 @@ public class YALT implements ActionListener {
 				} else {
 					// file is in wrong format
 					JOptionPane.showMessageDialog(null, "Invalid file content on line " 
-							+ count + 1 + ". Separate questions with " +
+							+ (count + 1) + ". Separate questions with " +
 							"answers using \":::::\" (five colons).");
 					return;
 				}
@@ -197,10 +199,7 @@ public class YALT implements ActionListener {
 			scan.close();
 		}
 		numberOfQuestions.setText(count + " questions"); // Display total number of questions
-		// Display a random question, update the answerToQues to it's answer
-		questionList = new ArrayList<String>();
-		questionList = mapToArrayList(quesToAnsMap);
-		answerToQues = showRandomQuestion(questionList);
+		answerToQues = showRandomQuestion(quesToAnsMap);
 		databaseMenu.setEnabled(true);
 	}
 
@@ -235,10 +234,11 @@ public class YALT implements ActionListener {
 	 * @param list of questions
 	 * @return answer to random question shown
 	 */
-	public String showRandomQuestion(ArrayList<String> list) {
+	public String showRandomQuestion(Map<String, String> quesToAnsMap) {
 		Random rand = new Random();
-		String randomQ = list.get(rand.nextInt(list.size()));
-		question.setText(randomQ);
+		List<String> questionList = new ArrayList<String>(quesToAnsMap.keySet());
+		String randomQ = questionList.get(rand.nextInt(quesToAnsMap.size()));
+		question.setText("Question: " + randomQ);
 		return quesToAnsMap.get(randomQ);
 	}
 
@@ -265,9 +265,13 @@ public class YALT implements ActionListener {
 	 * Refreshes/Resets the state of the program.
 	 */
 	private void refreshState() {
-		// TODO: Better alternative??
-		frame.dispose();
-		new YALT();
+		EditDB.getFrame().addWindowListener(new WindowAdapter() {
+		    public void windowClosed(WindowEvent e) {
+		    	frame.dispose(); // dispose the frame
+				new YALT(); // Re initialize
+				frame.setEnabled(true); // Enable all input
+		    };
+		});
 	}
 
 
@@ -307,7 +311,7 @@ public class YALT implements ActionListener {
 	private void initializeNorth() {
 		north = new JPanel(new GridLayout(1, 4));
 		String[] files = getFileNames(); // Get all file names in DATABASE folder
-		fileSelector = new JComboBox(files);
+		fileSelector = new JComboBox<String>(files);
 		fileName = DATABASE + files[0]; // Set the filename to be the first file in array
 		fileSelector.addActionListener(this);
 		go = new JButton("Go");
