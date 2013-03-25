@@ -3,6 +3,8 @@ YALT
 
 Yet Another Learning Tool
 
+![ScreenShot](https://raw.github.com/thekarangoel/YALT/master/screenshot.png)
+
 Karan Goel, 2013
 
 Yet Another Learning Tool (YALT) is a lightweight
