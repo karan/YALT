@@ -7,7 +7,7 @@ Yet Another Learning Tool
 
 Karan Goel, 2013
 
-Yet Another Learning Tool (YALT) is a lightweight
+Yet Another Learning Tool (YALT) is a lightweight and minimal
 utility to make it easier for you to remember things.
 It is a flash-card like system, where you'lll be
 presented with random questions from selected database.
