@@ -120,7 +120,7 @@ public class YALT implements ActionListener {
 		try {
 			if(e.getSource() == fileSelector) { 
 				// If a new file is selected
-				fileName = DATABASE + (String) fileSelector.getSelectedItem();
+				fileName = DATABASE + fileSelector.getSelectedItem().toString();
 				go.setEnabled(true); // File name is changed, set "Go" to enabled.
 				databaseMenu.setEnabled(false); // File changed, so disable manage database menu
 			} else if(e.getSource() == go) { 
@@ -136,13 +136,13 @@ public class YALT implements ActionListener {
 			} else if(e.getSource() == edit) {
 				// Edit selected database
 				frame.setEnabled(false); // Disable input to parent frame
-				new EditDB((String) fileSelector.getSelectedItem(), quesToAnsMap);
+				new EditDB(fileSelector.getSelectedItem().toString(), quesToAnsMap);
 				refreshState(); // Refresh the frame. Reinitialize, and enable all input
 			} else if(e.getSource() == delete) {
 				// Popup confirm, delete
 				int n = JOptionPane.showConfirmDialog(frame,
 						"Are you sure you want to delete the database " 
-								+ (String) fileSelector.getSelectedItem() + "?",
+								+ fileSelector.getSelectedItem().toString() + "?",
 								"Confirm Deletion", JOptionPane.YES_NO_OPTION, 
 								JOptionPane.ERROR_MESSAGE);
 				checkAndDelete(n, fileName);
