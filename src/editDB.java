@@ -34,7 +34,7 @@ import javax.swing.table.DefaultTableModel;
  * @author Karan Goel
  * 
  */
-public class EditDB implements ActionListener {
+public class EditDB extends JFrame implements ActionListener {
 	
 	private String databaseName; // Holds the database's name being worked on
 	private static JFrame frame;
